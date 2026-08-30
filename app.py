@@ -377,23 +377,25 @@ def build_interactive_map(selected_city: str, map_style_mode: str):
     }
     mapbox_style = style_mapping.get(map_style_mode, "open-street-map")
 
-    # Target Lat/Lon for active city
-    active_info = CITY_COORDINATES.get(selected_city, {"lat": 20.5937, "lon": 78.9629})
+    # Build scatter map using Plotly 7 scatter_map (or scatter_mapbox fallback)
+    scatter_fn = getattr(px, "scatter_map", getattr(px, "scatter_mapbox", None))
+    style_param = "map_style" if hasattr(px, "scatter_map") else "mapbox_style"
 
-    fig = px.scatter_mapbox(
-        df_map,
-        lat="lat",
-        lon="lon",
-        hover_name="city",
-        hover_data={"state": True, "lat": False, "lon": False, "color": False, "size": False},
-        color="color",
-        color_discrete_map={"#f43f5e": "#f43f5e", "#38bdf8": "#38bdf8"},
-        size="size",
-        size_max=22,
-        zoom=4.8,
-        center={"lat": active_info["lat"], "lon": active_info["lon"]},
-        mapbox_style=mapbox_style
-    )
+    kwargs = {
+        "lat": "lat",
+        "lon": "lon",
+        "hover_name": "city",
+        "hover_data": {"state": True, "lat": False, "lon": False, "color": False, "size": False},
+        "color": "color",
+        "color_discrete_map": {"#f43f5e": "#f43f5e", "#38bdf8": "#38bdf8"},
+        "size": "size",
+        "size_max": 22,
+        "zoom": 4.8,
+        "center": {"lat": active_info["lat"], "lon": active_info["lon"]},
+        style_param: mapbox_style
+    }
+
+    fig = scatter_fn(df_map, **kwargs)
 
     fig.update_traces(
         marker=dict(opacity=0.9),
