@@ -377,6 +377,9 @@ def build_interactive_map(selected_city: str, map_style_mode: str):
     }
     mapbox_style = style_mapping.get(map_style_mode, "open-street-map")
 
+    # Target Lat/Lon for active city
+    active_info = CITY_COORDINATES.get(selected_city, {"lat": 20.5937, "lon": 78.9629})
+
     # Build scatter map using Plotly 7 scatter_map (or scatter_mapbox fallback)
     scatter_fn = getattr(px, "scatter_map", getattr(px, "scatter_mapbox", None))
     style_param = "map_style" if hasattr(px, "scatter_map") else "mapbox_style"
