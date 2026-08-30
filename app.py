@@ -596,16 +596,21 @@ def main():
         )
 
 
-        # Handle Click Selection from Map Pin
-        if map_event and "selection" in map_event and map_event["selection"]["points"]:
-            point = map_event["selection"]["points"][0]
-            if "customdata" in point:
-                clicked_city = point["customdata"][0]
-                clicked_state = point["customdata"][1]
-                if clicked_city != st.session_state["selected_city"]:
-                    st.session_state["selected_state"] = clicked_state
-                    st.session_state["selected_city"] = clicked_city
-                    st.rerun()
+        # Handle Click Selection from Map Pin safely
+        if map_event:
+            selection = getattr(map_event, "selection", None) or (map_event.get("selection") if isinstance(map_event, dict) else None)
+            if selection:
+                points = getattr(selection, "points", None) or (selection.get("points") if isinstance(selection, dict) else None)
+                if points and len(points) > 0:
+                    point = points[0]
+                    customdata = getattr(point, "customdata", None) or (point.get("customdata") if isinstance(point, dict) else None)
+                    if customdata and len(customdata) >= 2:
+                        clicked_city = customdata[0]
+                        clicked_state = customdata[1]
+                        if clicked_city != st.session_state["selected_city"]:
+                            st.session_state["selected_state"] = clicked_state
+                            st.session_state["selected_city"] = clicked_city
+                            st.rerun()
 
     st.markdown("---")
 
